@@ -1,1 +1,26 @@
-{}
+{
+  "required_nacl_tags": [
+    "Environment",
+    "Owner",
+    "compliance",
+    "confidentiality"
+  ],
+  "allow_default_nacl": false,
+  "allow_unassociated_nacl": false,
+  "approved_nacl_public_ingress_ports": [
+    80,
+    443
+  ],
+  "approved_admin_cidrs": [],
+  "approved_admin_ipv6_cidrs": [],
+  "approved_admin_ports": [
+    22,
+    3389
+  ],
+  "approved_nacl_flow_log_statuses": [
+    "ACTIVE"
+  ],
+  "required_nacl_flow_log_traffic_types": [
+    "ALL"
+  ]
+}
