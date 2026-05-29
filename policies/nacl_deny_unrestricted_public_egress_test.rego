@@ -1,5 +1,9 @@
 package compliance_framework.deny_unrestricted_public_egress
 
+test_risk_template_violation_id if {
+	risk_templates[0].violation_ids == ["nacl_unrestricted_public_egress"]
+}
+
 test_no_violation_private_egress_cidr if {
 	count(violation) == 0 with input as {
 		"network_acl": {"Entries": [{"Egress": true, "RuleAction": "allow", "CidrBlock": "10.0.1.0/24"}]}

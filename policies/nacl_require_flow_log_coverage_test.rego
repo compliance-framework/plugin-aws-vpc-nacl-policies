@@ -1,5 +1,9 @@
 package compliance_framework.require_flow_log_coverage
 
+test_risk_template_violation_id if {
+	risk_templates[0].violation_ids == ["nacl_flow_log_coverage_not_compliant"]
+}
+
 test_no_violation_vpc_flow_log_covers_associated_subnets if {
 	count(violation) == 0 with input as {
 		"network_acl": {"Associations": [{"SubnetId": "subnet-1"}, {"SubnetId": "subnet-2"}]},

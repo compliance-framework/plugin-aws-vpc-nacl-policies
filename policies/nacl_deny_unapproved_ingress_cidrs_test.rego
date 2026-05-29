@@ -1,5 +1,9 @@
 package compliance_framework.deny_unapproved_ingress_cidrs
 
+test_risk_template_violation_id if {
+	risk_templates[0].violation_ids == ["nacl_unapproved_public_ingress"]
+}
+
 test_no_violation_private_ingress_cidr if {
 	count(violation) == 0 with input as {
 		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "10.0.1.0/24", "PortRange": {"From": 22, "To": 22}}]}

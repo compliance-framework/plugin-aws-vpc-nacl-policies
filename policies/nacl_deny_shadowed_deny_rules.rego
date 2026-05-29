@@ -1,5 +1,38 @@
 package compliance_framework.deny_shadowed_deny_rules
 
+risk_templates := [{
+  "name": "Network ACL deny rules are shadowed by earlier allow rules",
+  "title": "Ineffective Network ACL deny protection",
+  "statement": "A broader allow rule appears before a deny rule and already matches the same direction, protocol, CIDR, and port range, making the deny ineffective and weakening the intended network access control boundary.",
+  "likelihood_hint": "medium",
+  "impact_hint": "high",
+  "violation_ids": ["nacl_shadowed_deny_rule"],
+  "threat_refs": [
+    {
+      "system": "https://cwe.mitre.org",
+      "external_id": "CWE-693",
+      "title": "Protection Mechanism Failure",
+      "url": "https://cwe.mitre.org/data/definitions/693.html"
+    },
+    {
+      "system": "https://cwe.mitre.org",
+      "external_id": "CWE-284",
+      "title": "Improper Access Control",
+      "url": "https://cwe.mitre.org/data/definitions/284.html"
+    }
+  ],
+  "remediation": {
+    "title": "Reorder or narrow Network ACL rules so deny logic remains effective",
+    "description": "Update rule order or scope so earlier allow rules do not fully cover later deny rules that are intended to enforce network restrictions.",
+    "tasks": [
+      {"title": "Identify deny rules that are fully covered by earlier allow rules"},
+      {"title": "Move deny rules ahead of broader allow rules where appropriate"},
+      {"title": "Narrow overly broad allow rules so they no longer bypass the intended deny behavior"},
+      {"title": "Validate the resulting rule order against expected ingress and egress traffic paths"}
+    ]
+  }
+}]
+
 entry_protocol(entry) := protocol if {
 	protocol := lower(sprintf("%v", [object.get(entry, "Protocol", "-1")]))
 }
@@ -67,7 +100,7 @@ shadowed_deny_rule[deny_entry] if {
 	port_covers(allow_entry, deny_entry)
 }
 
-violation[{}] if {
+violation[{"id": "nacl_shadowed_deny_rule"}] if {
 	count(shadowed_deny_rule) > 0
 }
 

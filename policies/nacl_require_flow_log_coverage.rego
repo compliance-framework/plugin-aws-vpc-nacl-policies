@@ -1,5 +1,32 @@
 package compliance_framework.require_flow_log_coverage
 
+risk_templates := [{
+  "name": "Network ACL related flow log coverage is not compliant",
+  "title": "Network ACL traffic logging gap",
+  "statement": "Associated subnets or the parent VPC do not have approved flow log coverage, reducing the ability to detect, investigate, and audit network activity affecting traffic governed by the Network ACL.",
+  "likelihood_hint": "medium",
+  "impact_hint": "medium",
+  "violation_ids": ["nacl_flow_log_coverage_not_compliant"],
+  "threat_refs": [
+    {
+      "system": "https://cwe.mitre.org",
+      "external_id": "CWE-778",
+      "title": "Insufficient Logging",
+      "url": "https://cwe.mitre.org/data/definitions/778.html"
+    }
+  ],
+  "remediation": {
+    "title": "Enable approved flow log coverage for Network ACL traffic",
+    "description": "Ensure the parent VPC or every subnet associated with the Network ACL has flow logs in approved statuses and with the required traffic capture.",
+    "tasks": [
+      {"title": "Identify whether flow log coverage should be satisfied at the VPC level or per associated subnet"},
+      {"title": "Enable flow logs for uncovered associated subnets or the parent VPC"},
+      {"title": "Use approved flow log statuses and required traffic types"},
+      {"title": "Confirm log delivery reaches the expected destination for monitoring and retention"}
+    ]
+  }
+}]
+
 approved_flow_log_status(status) if {
 	approved := data.approved_nacl_flow_log_statuses[_]
 	upper(status) == upper(approved)
@@ -42,7 +69,7 @@ missing_flow_log_coverage[subnet_id] if {
 	not subnet_flow_log_coverage(subnet_id)
 }
 
-violation[{}] if {
+violation[{"id": "nacl_flow_log_coverage_not_compliant"}] if {
 	count(missing_flow_log_coverage) > 0
 }
 

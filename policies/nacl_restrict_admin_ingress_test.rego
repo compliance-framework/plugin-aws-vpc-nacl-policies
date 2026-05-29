@@ -1,5 +1,9 @@
 package compliance_framework.restrict_admin_ingress
 
+test_risk_template_violation_id if {
+	risk_templates[0].violation_ids == ["nacl_unapproved_admin_ingress"]
+}
+
 test_violation_ssh_from_public_source if {
 	count(violation) == 1 with input as {
 		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "Protocol": "6", "PortRange": {"From": 22, "To": 22}, "CidrBlock": "0.0.0.0/0"}]}

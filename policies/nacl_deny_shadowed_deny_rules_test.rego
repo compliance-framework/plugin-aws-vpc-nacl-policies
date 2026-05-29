@@ -1,5 +1,9 @@
 package compliance_framework.deny_shadowed_deny_rules
 
+test_risk_template_violation_id if {
+	risk_templates[0].violation_ids == ["nacl_shadowed_deny_rule"]
+}
+
 test_violation_ingress_deny_shadowed_by_public_allow if {
 	count(violation) == 1 with input as {
 		"network_acl": {"Entries": [
