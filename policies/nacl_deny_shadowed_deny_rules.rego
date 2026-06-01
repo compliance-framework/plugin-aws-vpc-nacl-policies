@@ -3,7 +3,7 @@ package compliance_framework.deny_shadowed_deny_rules
 risk_templates := [{
   "name": "Network ACL deny rules are shadowed by earlier allow rules",
   "title": "Ineffective Network ACL deny protection",
-  "statement": "A broader allow rule appears before a deny rule and already matches the same direction, protocol, CIDR, and port range, making the deny ineffective and weakening the intended network access control boundary.",
+  "statement": "A broader allow rule appears before a deny rule and already matches the same direction, protocol, CIDR, and traffic selector, making the deny ineffective and weakening the intended network access control boundary.",
   "likelihood_hint": "medium",
   "impact_hint": "high",
   "violation_ids": ["nacl_shadowed_deny_rule"],
@@ -51,6 +51,16 @@ entry_to_port(entry) := to_port if {
 	to_port := object.get(port_range, "To", 65535)
 }
 
+entry_icmp_type(entry) := icmp_type if {
+	icmp_type_code := object.get(entry, "IcmpTypeCode", {})
+	icmp_type := object.get(icmp_type_code, "Type", -1)
+}
+
+entry_icmp_code(entry) := icmp_code if {
+	icmp_type_code := object.get(entry, "IcmpTypeCode", {})
+	icmp_code := object.get(icmp_type_code, "Code", -1)
+}
+
 same_direction(first, second) if {
 	object.get(first, "Egress", false) == object.get(second, "Egress", false)
 }
@@ -79,13 +89,63 @@ cidr_covers(allow_entry, deny_entry) if {
 	net.cidr_contains(allow_cidr, deny_cidr)
 }
 
-port_covers(allow_entry, deny_entry) if {
-	entry_protocol(allow_entry) == "-1"
+port_range_protocol(entry) if {
+	protocol := entry_protocol(entry)
+	protocol in ["6", "tcp", "17", "udp"]
+}
+
+icmp_protocol(entry) if {
+	protocol := entry_protocol(entry)
+	protocol in ["1", "icmp", "58", "icmpv6"]
 }
 
 port_covers(allow_entry, deny_entry) if {
 	entry_from_port(allow_entry) <= entry_from_port(deny_entry)
 	entry_to_port(allow_entry) >= entry_to_port(deny_entry)
+}
+
+icmp_type_covers(allow_entry, deny_entry) if {
+	entry_icmp_type(allow_entry) == -1
+}
+
+icmp_type_covers(allow_entry, deny_entry) if {
+	entry_icmp_type(allow_entry) == entry_icmp_type(deny_entry)
+}
+
+icmp_code_covers(allow_entry, deny_entry) if {
+	entry_icmp_type(allow_entry) == -1
+}
+
+icmp_code_covers(allow_entry, deny_entry) if {
+	entry_icmp_code(allow_entry) == -1
+}
+
+icmp_code_covers(allow_entry, deny_entry) if {
+	entry_icmp_code(allow_entry) == entry_icmp_code(deny_entry)
+}
+
+icmp_type_code_covers(allow_entry, deny_entry) if {
+	icmp_type_covers(allow_entry, deny_entry)
+	icmp_code_covers(allow_entry, deny_entry)
+}
+
+traffic_selector_covers(allow_entry, deny_entry) if {
+	entry_protocol(allow_entry) == "-1"
+}
+
+traffic_selector_covers(allow_entry, deny_entry) if {
+	port_range_protocol(allow_entry)
+	port_covers(allow_entry, deny_entry)
+}
+
+traffic_selector_covers(allow_entry, deny_entry) if {
+	icmp_protocol(allow_entry)
+	icmp_type_code_covers(allow_entry, deny_entry)
+}
+
+traffic_selector_covers(allow_entry, deny_entry) if {
+	not port_range_protocol(allow_entry)
+	not icmp_protocol(allow_entry)
 }
 
 shadowed_deny_rule[deny_entry] if {
@@ -97,7 +157,7 @@ shadowed_deny_rule[deny_entry] if {
 	same_direction(allow_entry, deny_entry)
 	protocol_covers(allow_entry, deny_entry)
 	cidr_covers(allow_entry, deny_entry)
-	port_covers(allow_entry, deny_entry)
+	traffic_selector_covers(allow_entry, deny_entry)
 }
 
 violation[{"id": "nacl_shadowed_deny_rule"}] if {
@@ -105,4 +165,4 @@ violation[{"id": "nacl_shadowed_deny_rule"}] if {
 }
 
 title := "Network ACL deny rules should not be shadowed by earlier allow rules"
-description := "Network ACL rules are evaluated by ascending rule number, so deny rules should not appear after broader allow rules that already match the same direction, protocol, CIDR, and port range"
+description := "Network ACL rules are evaluated by ascending rule number, so deny rules should not appear after broader allow rules that already match the same direction, protocol, CIDR, and traffic selector"

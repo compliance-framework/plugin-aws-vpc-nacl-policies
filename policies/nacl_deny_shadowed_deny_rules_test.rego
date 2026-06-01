@@ -57,3 +57,40 @@ test_no_violation_earlier_allow_does_not_cover_deny_port if {
 		]}
 	}
 }
+
+test_violation_icmp_deny_shadowed_by_same_type_code_allow if {
+	count(violation) == 1 with input as {
+		"network_acl": {"Entries": [
+			{"RuleNumber": 100, "RuleAction": "allow", "Egress": false, "Protocol": "1", "CidrBlock": "0.0.0.0/0", "IcmpTypeCode": {"Type": 8, "Code": 0}},
+			{"RuleNumber": 110, "RuleAction": "deny", "Egress": false, "Protocol": "1", "CidrBlock": "198.51.100.0/24", "IcmpTypeCode": {"Type": 8, "Code": 0}}
+		]}
+	}
+}
+
+test_violation_icmp_deny_shadowed_by_all_type_code_allow if {
+	count(violation) == 1 with input as {
+		"network_acl": {"Entries": [
+			{"RuleNumber": 100, "RuleAction": "allow", "Egress": false, "Protocol": "1", "CidrBlock": "0.0.0.0/0", "IcmpTypeCode": {"Type": -1, "Code": -1}},
+			{"RuleNumber": 110, "RuleAction": "deny", "Egress": false, "Protocol": "1", "CidrBlock": "198.51.100.0/24", "IcmpTypeCode": {"Type": 3, "Code": 4}}
+		]}
+	}
+}
+
+test_no_violation_icmp_different_type_not_shadowed if {
+	count(violation) == 0 with input as {
+		"network_acl": {"Entries": [
+			{"RuleNumber": 100, "RuleAction": "allow", "Egress": false, "Protocol": "1", "CidrBlock": "0.0.0.0/0", "IcmpTypeCode": {"Type": 8, "Code": 0}},
+			{"RuleNumber": 110, "RuleAction": "deny", "Egress": false, "Protocol": "1", "CidrBlock": "198.51.100.0/24", "IcmpTypeCode": {"Type": 3, "Code": 4}}
+		]}
+	}
+}
+
+test_no_violation_icmp_different_code_not_shadowed if {
+	count(violation) == 0 with input as {
+		"network_acl": {"Entries": [
+			{"RuleNumber": 100, "RuleAction": "allow", "Egress": false, "Protocol": "1", "CidrBlock": "0.0.0.0/0", "IcmpTypeCode": {"Type": 3, "Code": 0}},
+			{"RuleNumber": 110, "RuleAction": "deny", "Egress": false, "Protocol": "1", "CidrBlock": "198.51.100.0/24", "IcmpTypeCode": {"Type": 3, "Code": 4}}
+		]}
+	}
+}
+

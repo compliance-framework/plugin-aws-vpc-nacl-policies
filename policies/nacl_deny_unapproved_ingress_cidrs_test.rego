@@ -10,15 +10,33 @@ test_no_violation_private_ingress_cidr if {
 	}
 }
 
+test_no_violation_documentation_ingress_cidr if {
+	count(violation) == 0 with input as {
+		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "203.0.113.0/24", "PortRange": {"From": 22, "To": 22}}]}
+	}
+}
+
 test_no_violation_public_https_ingress if {
 	count(violation) == 0 with input as {
 		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "0.0.0.0/0", "Protocol": "6", "PortRange": {"From": 443, "To": 443}}]}
 	}
 }
 
+test_no_violation_public_non_default_range_https_ingress if {
+	count(violation) == 0 with input as {
+		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "8.8.8.0/24", "Protocol": "6", "PortRange": {"From": 443, "To": 443}}]}
+	}
+}
+
 test_violation_public_ssh_ingress if {
 	count(violation) == 1 with input as {
 		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "0.0.0.0/0", "Protocol": "6", "PortRange": {"From": 22, "To": 22}}]}
+	}
+}
+
+test_violation_public_non_default_range_ssh_ingress if {
+	count(violation) == 1 with input as {
+		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "CidrBlock": "8.8.8.0/24", "Protocol": "6", "PortRange": {"From": 22, "To": 22}}]}
 	}
 }
 
@@ -55,6 +73,18 @@ test_violation_public_ipv6_ssh_ingress if {
 test_no_violation_public_ipv6_https_ingress if {
 	count(violation) == 0 with input as {
 		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "Ipv6CidrBlock": "::/0", "Protocol": "6", "PortRange": {"From": 443, "To": 443}}]}
+	}
+}
+
+test_no_violation_public_ipv6_non_default_range_https_ingress if {
+	count(violation) == 0 with input as {
+		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "Ipv6CidrBlock": "2001:4860:4860::/48", "Protocol": "6", "PortRange": {"From": 443, "To": 443}}]}
+	}
+}
+
+test_violation_public_ipv6_non_default_range_ssh_ingress if {
+	count(violation) == 1 with input as {
+		"network_acl": {"Entries": [{"Egress": false, "RuleAction": "allow", "Ipv6CidrBlock": "2001:4860:4860::/48", "Protocol": "6", "PortRange": {"From": 22, "To": 22}}]}
 	}
 }
 
