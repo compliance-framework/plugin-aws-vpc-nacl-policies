@@ -5,7 +5,7 @@ has_subnet_association if {
 }
 
 violation[{}] if {
-	not data.allow_unassociated_nacl
+	not data.allow_unassociated_nacl # regal ignore:unresolved-reference
 	not has_subnet_association
 }
 
