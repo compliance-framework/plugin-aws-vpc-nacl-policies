@@ -1,0 +1,4 @@
+lisa-design:
+Strict-mode unused deny_entry in nacl_deny_shadowed_deny_rules: the six affected bodies belong to multi-body functions (protocol_covers, icmp_type_covers, icmp_code_covers, traffic_selector_covers) whose other bodies read deny_entry, so the argument cannot be removed; those bodies take `_` instead. Regal argument-always-wildcard only fires when every body has a wildcard in that position, and it reports 0 errors.
+unassigned-return-value: bare object.get(..., false) rewritten as `!= false` (verified same truthiness for true/false/null/0/""/"false"/[]/{}).
+Self-review pass 1 (core, rego-policy rules): no findings introduced by this diff; pre-existing issues listed in the PR body only.
