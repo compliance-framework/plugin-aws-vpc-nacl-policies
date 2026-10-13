@@ -1,36 +1,36 @@
 package compliance_framework.deny_shadowed_deny_rules
 
 risk_templates := [{
-  "name": "Network ACL deny rules are shadowed by earlier allow rules",
-  "title": "Ineffective Network ACL deny protection",
-  "statement": "A broader allow rule appears before a deny rule and already matches the same direction, protocol, CIDR, and traffic selector, making the deny ineffective and weakening the intended network access control boundary.",
-  "likelihood_hint": "medium",
-  "impact_hint": "high",
-  "violation_ids": ["nacl_shadowed_deny_rule"],
-  "threat_refs": [
-    {
-      "system": "https://cwe.mitre.org",
-      "external_id": "CWE-693",
-      "title": "Protection Mechanism Failure",
-      "url": "https://cwe.mitre.org/data/definitions/693.html"
-    },
-    {
-      "system": "https://cwe.mitre.org",
-      "external_id": "CWE-284",
-      "title": "Improper Access Control",
-      "url": "https://cwe.mitre.org/data/definitions/284.html"
-    }
-  ],
-  "remediation": {
-    "title": "Reorder or narrow Network ACL rules so deny logic remains effective",
-    "description": "Update rule order or scope so earlier allow rules do not fully cover later deny rules that are intended to enforce network restrictions.",
-    "tasks": [
-      {"title": "Identify deny rules that are fully covered by earlier allow rules"},
-      {"title": "Move deny rules ahead of broader allow rules where appropriate"},
-      {"title": "Narrow overly broad allow rules so they no longer bypass the intended deny behavior"},
-      {"title": "Validate the resulting rule order against expected ingress and egress traffic paths"}
-    ]
-  }
+	"name": "Network ACL deny rules are shadowed by earlier allow rules",
+	"title": "Ineffective Network ACL deny protection",
+	"statement": "A broader allow rule appears before a deny rule and already matches the same direction, protocol, CIDR, and traffic selector, making the deny ineffective and weakening the intended network access control boundary.",
+	"likelihood_hint": "medium",
+	"impact_hint": "high",
+	"violation_ids": ["nacl_shadowed_deny_rule"],
+	"threat_refs": [
+		{
+			"system": "https://cwe.mitre.org",
+			"external_id": "CWE-693",
+			"title": "Protection Mechanism Failure",
+			"url": "https://cwe.mitre.org/data/definitions/693.html",
+		},
+		{
+			"system": "https://cwe.mitre.org",
+			"external_id": "CWE-284",
+			"title": "Improper Access Control",
+			"url": "https://cwe.mitre.org/data/definitions/284.html",
+		},
+	],
+	"remediation": {
+		"title": "Reorder or narrow Network ACL rules so deny logic remains effective",
+		"description": "Update rule order or scope so earlier allow rules do not fully cover later deny rules that are intended to enforce network restrictions.",
+		"tasks": [
+			{"title": "Identify deny rules that are fully covered by earlier allow rules"},
+			{"title": "Move deny rules ahead of broader allow rules where appropriate"},
+			{"title": "Narrow overly broad allow rules so they no longer bypass the intended deny behavior"},
+			{"title": "Validate the resulting rule order against expected ingress and egress traffic paths"},
+		],
+	},
 }]
 
 entry_protocol(entry) := protocol if {
@@ -65,7 +65,7 @@ same_direction(first, second) if {
 	object.get(first, "Egress", false) == object.get(second, "Egress", false)
 }
 
-protocol_covers(allow_entry, deny_entry) if {
+protocol_covers(allow_entry, _) if {
 	entry_protocol(allow_entry) == "-1"
 }
 
@@ -104,7 +104,7 @@ port_covers(allow_entry, deny_entry) if {
 	entry_to_port(allow_entry) >= entry_to_port(deny_entry)
 }
 
-icmp_type_covers(allow_entry, deny_entry) if {
+icmp_type_covers(allow_entry, _) if {
 	entry_icmp_type(allow_entry) == -1
 }
 
@@ -112,11 +112,11 @@ icmp_type_covers(allow_entry, deny_entry) if {
 	entry_icmp_type(allow_entry) == entry_icmp_type(deny_entry)
 }
 
-icmp_code_covers(allow_entry, deny_entry) if {
+icmp_code_covers(allow_entry, _) if {
 	entry_icmp_type(allow_entry) == -1
 }
 
-icmp_code_covers(allow_entry, deny_entry) if {
+icmp_code_covers(allow_entry, _) if {
 	entry_icmp_code(allow_entry) == -1
 }
 
@@ -129,7 +129,7 @@ icmp_type_code_covers(allow_entry, deny_entry) if {
 	icmp_code_covers(allow_entry, deny_entry)
 }
 
-traffic_selector_covers(allow_entry, deny_entry) if {
+traffic_selector_covers(allow_entry, _) if {
 	entry_protocol(allow_entry) == "-1"
 }
 
@@ -143,7 +143,7 @@ traffic_selector_covers(allow_entry, deny_entry) if {
 	icmp_type_code_covers(allow_entry, deny_entry)
 }
 
-traffic_selector_covers(allow_entry, deny_entry) if {
+traffic_selector_covers(allow_entry, _) if {
 	not port_range_protocol(allow_entry)
 	not icmp_protocol(allow_entry)
 }
