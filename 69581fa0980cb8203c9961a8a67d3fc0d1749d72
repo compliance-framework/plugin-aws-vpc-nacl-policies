@@ -1,2 +1,5 @@
 lisa-selfreview:
 Pass 1 (core, rego-policy packs): approve, no findings. Callers and config are byte-identical to the reviewed and merged plugin-local-ssh-policies#14 (master policy repo). CORE-CI-001: every shared workflow pinned by SHA (v1.5.2), per-job permissions scoped; `secrets: inherit` matches the mock and is required for the release environment. CORE-DOC-001/CORE-REL-001: the GitHub release no longer carries bundle.tar.gz (known batch difference) - raised for reviewers in the PR body, not a code change. README describes only local `make build`, not releasing, so it is unchanged.
+
+lisa-design:
+Seed .release-please-manifest.json at 0.1.0: releases/latest is v0.1.0 (the only release, final, vX.Y.Z), its commit 78d0349 is an ancestor of master, so no bootstrap-sha. No version.txt added; release-please adds it in the first release PR. Default branch stays master: release-please and preview push triggers use [master], PR base is master.
